@@ -42,7 +42,7 @@ app.post('/char-register', async (req, res) => {
   const user_id = req.body.user_id;
   const char_id = req.body.text;
 
-  const text = await new Promise(await (resolve, reject) => {
+  const text = await new Promise(async (resolve, reject) => {
       const char_sheet = await requestCharSheet(char_id);
       await storeCharSheet(user_id, char_id);
       return char_sheet.pc_name + ' のキャラシを登録しました！';
