@@ -48,9 +48,9 @@ app.post('/char-register', async (req, res) => {
       return char_sheet.pc_name + ' のキャラシを登録しました！';
     });
 
-  const text = {
+  const message = {
     response_type: 'in_channel',
-    text: message,
+    text: text,
   };
   res.json(message);
 });
