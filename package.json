@@ -1,7 +1,7 @@
 {
-  "name": "slash-command-blockkit-example",
+  "name": "Slash-Commands-for-CoC",
   "version": "1.0.0",
-  "description": "Slack Block Kit Sample",
+  "description": "Provides slack commands for Coc sessions.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -11,13 +11,11 @@
     "bot",
     "slack"
   ],
-  "author": "Tomomi Imura",
+  "author": "Natsuki Asada",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.16.1",
     "body-parser": "^1.17.1",
     "express": "^4.15.2",
-    "tsscmp": "^1.0.6",
-    "qs": "^6.6.0"
+    "tsscmp": "^1.0.6"
   }
 }
