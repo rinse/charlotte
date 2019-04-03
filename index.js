@@ -4,9 +4,13 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
+const nedb = require('nedb-promise');
+const request = require('request-promise');
 const signature = require('./verifySignature');
 
 const app = express();
+const db_char_sheet = new nedb({ filename: '.data/char_sheet.db', autoload: true });
+const cache_char_sheet = {};
 
 const rawBodyBuffer = (req, res, buf, encoding) => {
   if (buf && buf.length) {
@@ -37,10 +41,43 @@ app.post('/char-register', async (req, res) => {
 
   const user_id = req.body.user_id;
   const char_id = req.body.text;
-  const message = {
-    response_type: 'in_channel',
-    text: JSON.stringify({user_id: user_id, char_id: char_id}),
-  };
-  res.json(message);
+
+  if (char_id == '') {
+    const text = 'キャラシIDを指定してください。キャラシIDはキャラクター保管庫で確認できます。\n/char-register キャラシID';
+    res.json(toMessage(text));
+    return;
+  }
+
+  try {
+    const char_sheet = await requestCharSheet(char_id);
+    await storeCharSheet(user_id, char_id);
+    const text = char_sheet.pc_name + ' のキャラシを登録しました！';
+    res.json(toMessage(text));
+  } catch (e) {
+    console.log(e.message);
+    const text = 'キャラシの登録に失敗しました。\nキャラシIDを確認してください。(ID=' + char_id + ')';
+    res.json(toMessage(text));
+  }
 });
+
+const toMessage = (text) => {
+  return {
+    response_type: 'in_channel',
+    text: text,
+  };
+};
+
+const requestCharSheet = async (char_id) => {
+  const options = {
+    url: 'https://charasheet.vampire-blood.net/' + char_id + '.js',
+    method: 'GET',
+    json: true,
+  };
+  return request(options);
+};
+
+const storeCharSheet = async (user_id, char_id) => {
+  cache_char_sheet[user_id] = char_id;
+  return db_char_sheet.insert({ user_id: user_id, char_id: char_id });
+};
 
