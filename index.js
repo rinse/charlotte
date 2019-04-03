@@ -4,6 +4,8 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
+const mapping_kanji = require('./mapping_kanji.json')
+const mersennetwister = require('mersennetwister');
 const nedb = require('nedb-promise');
 const request = require('request-promise');
 const signature = require('./verifySignature');
@@ -11,6 +13,7 @@ const signature = require('./verifySignature');
 const app = express();
 const db_char_sheet = new nedb({ filename: '.data/char_sheet.db', autoload: true });
 const cache_char_sheet = {};
+const mt = new mersennetwister(Date.now());
 
 const rawBodyBuffer = (req, res, buf, encoding) => {
   if (buf && buf.length) {
@@ -60,11 +63,66 @@ app.post('/char-register', async (req, res) => {
   }
 });
 
+app.post('/char-arts', async (req, res) => {
+  if(!signature.isVerified(req)) {
+    res.sendStatus(403);
+    return;
+  }
+
+  const user_id = req.body.user_id;
+  const arts_key = req.body.text;
+
+  try {
+    const char_sheet = await loadCharSheet(user_id)
+    if (char_sheet == null) {
+      const text =  'キャラシが見つかりません\n/char-registerを使ってキャラシを登録してください';
+      res.json(toMessage(text));
+      return;
+    }
+
+    if (arts_key == '') {
+      const text = '技能を指定してください。\n/char-arts 目星';
+      res.json(toMessage(text));
+      return;
+    }
+
+    const arts_obj = mapping_kanji[arts_key];
+    if (arts_obj == null) {
+      const text = `指定技能「${arts_key}」が見つかりません。`;
+      res.json(toMessage(text));
+      return;
+    }
+
+    const arts_value = char_sheet[arts_obj.kind][arts_obj.index];
+    const pc_name = char_sheet.pc_name;
+
+    const critical = 'クリティカル！ ';
+    const fumble = 'ファンブル！ ';
+    const success = '成功';
+    const failure = '失敗';
+    const result_roll = roll1d100();
+    const cof = 1 <= result_roll && result_roll <= 5
+        ? critical
+        : 96 <= result_roll && result_roll <= 100
+          ? fumble
+          : '';
+    const sof = result_roll <= arts_value ? success : failure;
+    const text = `${cof}${pc_name}は${arts_key}を${sof}させました。出目: ${result_roll}, 目標値: ${arts_value}`;
+    res.json(toMessage(text));
+  } catch (e) {
+    console.log(e.message);
+  }
+});
+
 const toMessage = (text) => {
   return {
     response_type: 'in_channel',
     text: text,
   };
+};
+
+const roll1d100 = () => {
+  return mt.int() % 100 + 1;
 };
 
 const requestCharSheet = async (char_id) => {
@@ -79,5 +137,22 @@ const requestCharSheet = async (char_id) => {
 const storeCharSheet = async (user_id, char_id) => {
   cache_char_sheet[user_id] = char_id;
   return db_char_sheet.insert({ user_id: user_id, char_id: char_id });
+};
+
+const loadCharSheet = async (user_id) => {
+  const cache = cache_char_sheet[user_id];
+  if (cache != null) {
+    return cache;
+  }
+
+  const obj = await db_char_sheet.findOne({ user_id: user_id });
+  if (obj == null) {
+    throw new Error('the given user_id is not in the database. id=' + user_id);
+  }
+
+  const char_id = obj.char_id;
+  const char_sheet = await requestCharSheet(char_id);
+  cache_char_sheet[user_id] = char_sheet;
+  return char_sheet;
 };
 
