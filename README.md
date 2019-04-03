@@ -1,22 +1,24 @@
-# Restaurant Search 
-Slack Slash Commands + Block Kit Example
+# Slach commands for CoC
+
+Provides handy shash commands of slack for CoC sessions.
+
+## commands
+
+### /char-register char_id
+
+Registers a character sheet of [キャラクター保管庫](https://charasheet.vampire-blood.net/coc_pc_making.html).
+
+You can find a character sheet id on the url.
+
+### /char-arts 技能
+
+Rolls 1d100 and show if it succeeded or failed.
+
+### /char-export
+
+Exports all information of the registered character in JSON format.
 
 ---
-
-A sample Slack Node + Express app to receive a slash command and reply with contexual messages.
-
-This example uses Yelp API to display three places near the eare specified by a user.
-
-*e.g.* A user send a command `/find-food pizza, SoMa SF`, the app fetches the result from Yelp and display three pizza joints in SoMa district in San Francisco.
-
-
-Full tutorial: [TBD]
-
----
-
-## :flags: Remix This Template
-
-First, [Remix this repo](https://glitch.com/edit/#!/remix/slash-blockkit) to work on your own.
 
 ## :gear: Setting up Your Slack App
 
@@ -36,16 +38,15 @@ Settings > **Basic information**
 
 If you distribute your app to public, you'll need the Client ID and Client Secret too.
 
-Also, this example uses [Yelp API](https://www.yelp.com/developers), which requires you to sign up to obtain the Yelp Client ID and API key.
-
-
 The credential info is stored in the `.env` file. 🗝
+
 ```
 SLACK_SIGNING_SECRET=enter_code_with_no_space
-
-YELP_CLIENT_ID=
-YELP_API_KEY=
 ```
 
 (Rename the `.env.sample ` in this repo to `.env`, and fill it out with your credentials!)
+
+---
+
+This project is remixed from [slack-blockkit](https://glitch.com/slash-blockkit)
 
