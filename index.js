@@ -58,7 +58,7 @@ app.post('/char-register', async (req, res) => {
     const text = 'キャラシの登録に失敗しました。\nキャラシIDを確認してください。(ID=' + char_id + ')';
     res.json(toMessage(text));
   }
-});
+}
 
 const toMessage = (text) => {
   return {
