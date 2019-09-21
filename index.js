@@ -46,51 +46,18 @@ app.post('/char-register', async (req, res) => {
   res.json(toMessage(text));
 });
 
+
 app.post('/char-arts', async (req, res) => {
-  if(!signature.isVerified(req)) {
+  if (!signature.isVerified(req)) {
     res.sendStatus(403);
     return;
   }
 
-  const user_id = req.body.user_id;
   const arts_key = req.body.text;
+  const user_id = req.body.user_id;
 
   try {
-    const char_sheet = await charsheet.loadCharSheet(user_id)
-    if (char_sheet == null) {
-      const text =  'キャラシが見つかりません\n/char-registerを使ってキャラシを登録してください';
-      res.json(toMessage(text));
-      return;
-    }
-
-    if (arts_key == '') {
-      const text = '技能を指定してください。\n/char-arts 目星';
-      res.json(toMessage(text));
-      return;
-    }
-
-    const arts_obj = mapping_kanji[arts_key];
-    if (arts_obj == null) {
-      const text = `指定技能「${arts_key}」が見つかりません。`;
-      res.json(toMessage(text));
-      return;
-    }
-
-    const arts_value = char_sheet[arts_obj.kind][arts_obj.index];
-    const pc_name = char_sheet.pc_name;
-
-    const critical = 'クリティカル！ ';
-    const fumble = 'ファンブル！ ';
-    const success = '成功';
-    const failure = '失敗';
-    const result_roll = utils.roll1d100();
-    const cof = 1 <= result_roll && result_roll <= 5
-        ? critical
-        : 96 <= result_roll && result_roll <= 100
-          ? fumble
-          : '';
-    const sof = result_roll <= arts_value ? success : failure;
-    const text = `${cof}${pc_name}は${arts_key}を${sof}させました。出目: ${result_roll}, 目標値: ${arts_value}`;
+    const text = await charlotte.doArts(arts_key, user_id);
     res.json(toMessage(text));
   } catch (e) {
     console.log(e.message);
