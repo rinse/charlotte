@@ -32,7 +32,11 @@ const requestCharSheet = async (char_id) => {
  */
 const storeCharSheet = async (user_id, char_id) => {
   cache_char_sheet[user_id] = null;
-  db_char_sheet.insert({ user_id: user_id, char_id: char_id });
+  db_char_sheet.update(
+      { user_id: user_id },
+      { user_id: user_id, char_id: char_id },
+      { upsert: true }
+  );
 };
 
 
