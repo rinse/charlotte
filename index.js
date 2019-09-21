@@ -4,16 +4,17 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const mapping_kanji = require('./mapping_kanji.json')
 const mersennetwister = require('mersennetwister');
-const nedb = require('nedb-promise');
-const request = require('request-promise');
+
+const charsheet = require('./charsheet');
+const utils = require('./utils');
 const signature = require('./verifySignature');
 
+const mapping_kanji = require('./mapping_kanji.json');
+
 const app = express();
-const db_char_sheet = new nedb({ filename: '.data/char_sheet.db', autoload: true });
-const cache_char_sheet = {};
 const mt = new mersennetwister(Date.now());
+
 
 const rawBodyBuffer = (req, res, buf, encoding) => {
   if (buf && buf.length) {
@@ -27,7 +28,6 @@ app.use(bodyParser.json({ verify: rawBodyBuffer }));
 const server = app.listen(process.env.PORT || 5000, () => {
   console.log('Express server listening on port %d in %s mode', server.address().port, app.settings.env);
 });
-
 
 
 /*
@@ -52,8 +52,8 @@ app.post('/char-register', async (req, res) => {
   }
 
   try {
-    const char_sheet = await requestCharSheet(char_id);
-    await storeCharSheet(user_id, char_id);
+    const char_sheet = await charsheet.requestCharSheet(char_id);
+    await charsheet.storeCharSheet(user_id, char_id);
     const text = char_sheet.pc_name + ' のキャラシを登録しました！';
     res.json(toMessage(text));
   } catch (e) {
@@ -73,7 +73,7 @@ app.post('/char-arts', async (req, res) => {
   const arts_key = req.body.text;
 
   try {
-    const char_sheet = await loadCharSheet(user_id)
+    const char_sheet = await charsheet.loadCharSheet(user_id)
     if (char_sheet == null) {
       const text =  'キャラシが見つかりません\n/char-registerを使ってキャラシを登録してください';
       res.json(toMessage(text));
@@ -122,7 +122,7 @@ app.post('/char-export', async (req, res) => {
 
   const user_id = req.body.user_id;
 
-  const char_sheet = await loadCharSheet(user_id);
+  const char_sheet = await charsheet.loadCharSheet(user_id);
   if (char_sheet == null) {
     const text = 'キャラシが登録されていません。';
     res.json(toMessage(text));
@@ -144,35 +144,3 @@ const toMessage = (text) => {
 const roll1d100 = () => {
   return mt.int() % 100 + 1;
 };
-
-const requestCharSheet = async (char_id) => {
-  const options = {
-    url: 'https://charasheet.vampire-blood.net/' + char_id + '.js',
-    method: 'GET',
-    json: true,
-  };
-  return request(options);
-};
-
-const storeCharSheet = async (user_id, char_id) => {
-  cache_char_sheet[user_id] = char_id;
-  return db_char_sheet.insert({ user_id: user_id, char_id: char_id });
-};
-
-const loadCharSheet = async (user_id) => {
-  const cache = cache_char_sheet[user_id];
-  if (cache != null) {
-    return cache;
-  }
-
-  const obj = await db_char_sheet.findOne({ user_id: user_id });
-  if (obj == null) {
-    throw new Error('the given user_id is not in the database. id=' + user_id);
-  }
-
-  const char_id = obj.char_id;
-  const char_sheet = await requestCharSheet(char_id);
-  cache_char_sheet[user_id] = char_sheet;
-  return char_sheet;
-};
-
