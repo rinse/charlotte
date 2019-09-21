@@ -65,21 +65,13 @@ app.post('/char-arts', async (req, res) => {
 });
 
 app.post('/char-export', async (req, res) => {
-  if(!signature.isVerified(req)) {
+  if (!signature.isVerified(req)) {
     res.sendStatus(403);
     return;
   }
 
   const user_id = req.body.user_id;
-
-  const char_sheet = await charsheet.loadCharSheet(user_id);
-  if (char_sheet == null) {
-    const text = 'キャラシが登録されていません。';
-    res.json(toMessage(text));
-    return;
-  }
-
-  const text = JSON.stringify(char_sheet);
+  const text = await charlotte.exportChar(user_id);
   res.json(toMessage(text));
 });
 

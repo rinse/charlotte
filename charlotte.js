@@ -104,7 +104,27 @@ const doArts = async (arts_key, user_id) => {
 };
 
 
+/**
+ * exprots information of the character
+ * @param user_id the user who owns the character
+ * @return text for a response
+ */
+const exportChar = async (user_id) => {
+  if (user_id == null) {
+    throw new Error('null reference exception: char_id');
+  }
+
+  const char_sheet = await charsheet.loadCharSheet(user_id);
+  if (char_sheet == null) {
+    return 'キャラシが登録されていません。';
+  }
+
+  return JSON.stringify(char_sheet);
+};
+
+
 module.exports =
   { registerChar
   , doArts
+  , exportChar
   };
