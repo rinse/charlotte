@@ -4,7 +4,6 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const mersennetwister = require('mersennetwister');
 
 const charsheet = require('./charsheet');
 const utils = require('./utils');
@@ -13,7 +12,6 @@ const signature = require('./verifySignature');
 const mapping_kanji = require('./mapping_kanji.json');
 
 const app = express();
-const mt = new mersennetwister(Date.now());
 
 
 const rawBodyBuffer = (req, res, buf, encoding) => {
@@ -100,7 +98,7 @@ app.post('/char-arts', async (req, res) => {
     const fumble = 'ファンブル！ ';
     const success = '成功';
     const failure = '失敗';
-    const result_roll = roll1d100();
+    const result_roll = utils.roll1d100();
     const cof = 1 <= result_roll && result_roll <= 5
         ? critical
         : 96 <= result_roll && result_roll <= 100
@@ -139,8 +137,4 @@ const toMessage = (text) => {
     response_type: 'in_channel',
     text: text,
   };
-};
-
-const roll1d100 = () => {
-  return mt.int() % 100 + 1;
 };
