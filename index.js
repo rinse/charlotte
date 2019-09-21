@@ -5,6 +5,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 
+const charlotte = require('./charlotte');
 const charsheet = require('./charsheet');
 const utils = require('./utils');
 const signature = require('./verifySignature');
@@ -33,32 +34,16 @@ const server = app.listen(process.env.PORT || 5000, () => {
  */
 
 app.post('/char-register', async (req, res) => {
-  if(!signature.isVerified(req)) {
+  if (!signature.isVerified(req)) {
     res.sendStatus(403);
     return;
   }
 
   // console.log(JSON.stringify(req.body));
-
-  const user_id = req.body.user_id;
   const char_id = req.body.text;
-
-  if (char_id == '') {
-    const text = 'キャラシIDを指定してください。キャラシIDはキャラクター保管庫で確認できます。\n/char-register キャラシID';
-    res.json(toMessage(text));
-    return;
-  }
-
-  try {
-    const char_sheet = await charsheet.requestCharSheet(char_id);
-    await charsheet.storeCharSheet(user_id, char_id);
-    const text = char_sheet.pc_name + ' のキャラシを登録しました！';
-    res.json(toMessage(text));
-  } catch (e) {
-    console.log(e.message);
-    const text = 'キャラシの登録に失敗しました。\nキャラシIDを確認してください。(ID=' + char_id + ')';
-    res.json(toMessage(text));
-  }
+  const user_id = req.body.user_id;
+  const text = await charlotte.registerChar(char_id, user_id);
+  res.json(toMessage(text));
 });
 
 app.post('/char-arts', async (req, res) => {
