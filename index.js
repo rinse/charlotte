@@ -62,6 +62,21 @@ app.post('/char-arts', async (req, res) => {
   }
 });
 
+
+app.post('/char-ability', async (req, res) => {
+  if (!signature.isVerified(req)) {
+    res.sendStatus(403);
+    return;
+  }
+
+  const ability_key = req.body.text;
+  const user_id = req.body.user_id;
+
+  const text = await charlotte.rollAbility(ability_key, user_id);
+  res.json(toMessage(text));
+});
+
+
 app.post('/char-export', async (req, res) => {
   if (!signature.isVerified(req)) {
     res.sendStatus(403);

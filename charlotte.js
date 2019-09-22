@@ -51,6 +51,15 @@ const CriFum = {
   },
 };
 
+const getRollResultMessage = (result_roll, pc_name, key, value) => {
+  const crifums = ['', 'クリティカル！ ',  'ファンブル！ '];
+  const cof = crifums[CriFum.test(result_roll)];
+  const success = '成功';
+  const failure = '失敗';
+  const sof = result_roll <= value ? success : failure;
+  return `${cof}${pc_name}は${key}を${sof}させました。出目: ${result_roll}, 目標値: ${value}`;
+};
+
 /**
  * Rolls dice and try to do arts
  * @param arts_key the key of the arts
@@ -79,18 +88,38 @@ const doArts = async (arts_key, user_id) => {
     return 'キャラシが見つかりません\n/char-registerを使ってキャラシを登録してください';
   }
 
+  const result_roll = utils.roll1d100();
   const arts_value = charsheet.getArtsValue(arts_key, char_sheet);
+  return getRollResultMessage(result_roll, char_sheet.pc_name, arts_key, arts_value);
+};
+
+
+/**
+ * Rolls dice and checks if the ability is given successfully.
+ * @param ability_key the key of the ability
+ * @param user_id the id of the user
+ */
+const rollAbility = async (ability_key, user_id) => {
+  if (ability_key == null) {
+    throw new Error('null reference exception: ability_key');
+  }
+
+  if (user_id == null) {
+    throw new Error('null reference exception: user_id');
+  }
+
+  if (!charsheet.isAbilityValid(ability_key)) {
+    return `指定能力「${ability_key}」が見つかりません。`;
+  }
+
+  const char_sheet = await charsheet.loadCharSheet(user_id);
+  if (char_sheet == null) {
+    return 'キャラシが見つかりません\n/char-registerを使ってキャラシを登録してください';
+  }
 
   const result_roll = utils.roll1d100();
-
-  const crifums = ['', 'クリティカル！ ',  'ファンブル！ '];
-  const cof = crifums[CriFum.test(result_roll)];
-  const pc_name = char_sheet.pc_name;
-  const success = '成功';
-  const failure = '失敗';
-  const sof = result_roll <= arts_value ? success : failure;
-
-  return `${cof}${pc_name}は${arts_key}を${sof}させました。出目: ${result_roll}, 目標値: ${arts_value}`;
+  const ability_value = charsheet.getAbilityValue(ability_key, char_sheet);
+  return getRollResultMessage(result_roll, char_sheet.pc_name, ability_key, ability_value);
 };
 
 
@@ -114,7 +143,8 @@ const exportChar = async (user_id) => {
 
 
 module.exports =
-  { registerChar
+  { exportChar
   , doArts
-  , exportChar
+  , registerChar
+  , rollAbility
   };

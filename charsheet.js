@@ -6,6 +6,7 @@ const nedb = require('nedb-promise');
 const request = require('request-promise');
 
 const arts_mapping = require('./arts_mapping.json');
+const np_mapping = require('./np_mapping.json');
 
 
 const cache_char_sheet = {};
@@ -81,6 +82,50 @@ const isArtsValid = (arts_key) => {
   }
 
   return arts_mapping[arts_key] != null;
+};
+
+
+/**
+ * Obtain the value of the ability.
+ * When a roll is lower than the value, the character shows the ability successfully.
+ * @param ability_key the key of the the ability
+ * @param char_sheet the charsheet to refer
+ * @return value of the ability of the character
+ */
+const getAbilityValue = (ability_key, char_sheet) => {
+  if (ability_key == null) {
+    throw new Error('null reference exception: ability_key');
+  }
+
+  if (char_sheet == null) {
+    throw new Error('null reference exception: char_sheet');
+  }
+
+  if (!isAbilityValid(ability_key)) {
+    throw new Error(`the ability is not valid. arts_key=${ability_key}`);
+  }
+
+  const np_key = np_mapping[ability_key];
+  const ability_value = char_sheet[np_key];
+  if (ability_value == null) {
+    throw new Error(`ability_value is not found. name=${char_sheet.pc_name}, key=${ability_key}, key=${np_key}`);
+  }
+
+  return ability_value;
+};
+
+
+/**
+ * Checks if the ability is valid.
+ * @param ability_key
+ * @return true if the ability is valid
+ */
+const isAbilityValid = (ability_key) => {
+  if (ability_key == null) {
+    throw new Error('null reference exception: ability_key');
+  }
+
+  return np_mapping[ability_key] != null;
 };
 
 
@@ -164,6 +209,8 @@ const hasArts = (char_sheet) => {
 
 module.exports =
   { getArtsValue
+  , getAbilityValue
+  , isAbilityValid
   , isArtsValid
   , isCharsheetValid
   , loadCharSheet
