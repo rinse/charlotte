@@ -35,6 +35,56 @@ const requestCharsheet = async (char_id) => {
 
 
 /**
+ * Obtain the value of the arts.
+ * When a roll is lower than the value, the character does the arts successfully.
+ * @param arts_key the arts to get a value
+ * @param char_sheet the charsheet to refer
+ * @return value of the arts of the character
+ */
+const getArtsValue = (arts_key, char_sheet) => {
+  if (char_sheet == null) {
+    throw new Error('null reference exception: char_sheet');
+  }
+
+  if (arts_key == null) {
+    throw new Error('null reference exception: arts_key');
+  }
+
+  if (!isArtsValid(arts_key)) {
+    throw new Error(`the arts is not valid. arts_key=${arts_key}`);
+  }
+
+  const arts_obj = arts_mapping[arts_key];
+
+  const kinds = char_sheet[arts_obj.kind];
+  if (kinds == null) {
+    throw new Error(`kind is not found. name=${char_sheet.pc_name}, key=${arts_key}, kind=${arts_obj.kind}`);
+  }
+
+  const arts_value = kinds[arts_obj.index];
+  if (arts_value == null) {
+    throw new Error(`arts_value is not found. name=${char_sheet.pc_name}, key=${arts_key}, kind=${arts_obj.kind}, index=${arts_obj.index}`);
+  }
+
+  return kinds[arts_obj.index];
+}
+
+
+/**
+ * Checks if the arts is valid.
+ * @param arts_key the arts to check
+ * @return true, if the arts is valid.
+ */
+const isArtsValid = (arts_key) => {
+  if (arts_key == null) {
+    throw new Error('null reference exception: arts_key');
+  }
+
+  return arts_mapping[arts_key] != null;
+};
+
+
+/**
  * It stores a charsheet in DB.
  * @param user_id the userId who owns the charsheet
  * @param char_id an id of the charsheet
@@ -113,7 +163,9 @@ const hasArts = (char_sheet) => {
 };
 
 module.exports =
-  { isCharsheetValid
+  { getArtsValue
+  , isArtsValid
+  , isCharsheetValid
   , loadCharSheet
   , requestCharsheet
   , storeCharSheet

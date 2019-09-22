@@ -3,7 +3,6 @@
  */
 
 const charsheet = require('./charsheet');
-const arts_mapping = require('./arts_mapping.json');
 const utils = require('./utils');
 
 
@@ -71,25 +70,16 @@ const doArts = async (arts_key, user_id) => {
     return '技能を指定してください。\n/char-arts 目星';
   }
 
+  if (!charsheet.isArtsValid(arts_key)) {
+    return `指定技能「${arts_key}」が見つかりません。`;
+  }
+
   const char_sheet = await charsheet.loadCharSheet(user_id);
   if (char_sheet == null) {
     return 'キャラシが見つかりません\n/char-registerを使ってキャラシを登録してください';
   }
 
-  const arts_obj = arts_mapping[arts_key];
-  if (arts_obj == null) {
-    return `指定技能「${arts_key}」が見つかりません。`;
-  }
-
-  const kinds = char_sheet[arts_obj.kind];
-  if (kinds == null) {
-    throw new Error(`kind is not found. name=${char_sheet.pc_name}, key=${arts_key}, kind=${arts_obj.kind}`);
-  }
-
-  const arts_value = kinds[arts_obj.index];
-  if (arts_value == null) {
-    throw new Error(`arts_value is not found. name=${char_sheet.pc_name}, key=${arts_key}, kind=${arts_obj.kind}, index=${arts_obj.index}`);
-  }
+  const arts_value = charsheet.getArtsValue(arts_key, char_sheet);
 
   const result_roll = utils.roll1d100();
 
