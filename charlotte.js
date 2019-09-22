@@ -27,7 +27,7 @@ const registerChar = async (char_id, user_id) => {
   }
 
   try {
-    const char_sheet = await charsheet.requestCharSheet(char_id);
+    const char_sheet = await charsheet.requestCharsheet(char_id);
     await charsheet.storeCharSheet(user_id, char_id);
     return char_sheet.pc_name + ' のキャラシを登録しました！';
   } catch (e) {

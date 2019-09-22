@@ -5,6 +5,8 @@
 const nedb = require('nedb-promise');
 const request = require('request-promise');
 
+const arts_mapping = require('./arts_mapping.json');
+
 
 const cache_char_sheet = {};
 const db_char_sheet = new nedb({ filename: '.data/char_sheet.db', autoload: true });
@@ -15,13 +17,20 @@ const db_char_sheet = new nedb({ filename: '.data/char_sheet.db', autoload: true
  * @param user_id the userId who owns the charsheet.
  * @return the charsheet object.
  */
-const requestCharSheet = async (char_id) => {
+const requestCharsheet = async (char_id) => {
   const options = {
     url: 'https://charasheet.vampire-blood.net/' + char_id + '.js',
     method: 'GET',
     json: true,
   };
-  return request(options);
+
+  const char_sheet = await request(options);
+  if (!isCharsheetValid(char_sheet)) {
+    console.log(JSON.stringify(char_sheet));
+    throw new Error('char_sheet is not valid.');
+  }
+
+  return char_sheet;
 };
 
 
@@ -58,7 +67,7 @@ const loadCharSheet = async (user_id) => {
   }
 
   const char_id = obj.char_id;
-  const char_sheet = await requestCharSheet(char_id);
+  const char_sheet = await requestCharsheet(char_id);
   cache_char_sheet[user_id] = char_sheet;
   return char_sheet;
 };
@@ -69,14 +78,43 @@ const loadCharSheet = async (user_id) => {
  * @param charsheet the charsheet to verify
  * @return true if the charsheet is valid
  */
-const verifyCharSheet = (charsheet) => {
+const isCharsheetValid = (char_sheet) => {
+  return isCoc(char_sheet) && hasArts(char_sheet);
+};
+
+const isCoc = (char_sheet) => {
+  if (char_sheet == null) {
+    throw new Error('char_sheet is null');
+  }
+
+  return char_sheet['game'] == 'coc';
+};
+
+const hasArts = (char_sheet) => {
+  if (char_sheet == null) {
+    throw new Error('char_sheet is null');
+  }
+
+  for (let [name, arts_obj] of Object.entries(arts_mapping)) {
+    const kinds = char_sheet[arts_obj.kind];
+    if (kinds == null) {
+      console.log(`kind is not found. name=${char_sheet.pc_name}, arts=${name}, kind=${arts_obj.kind}`);
+      return false;
+    }
+
+    const arts_value = kinds[arts_obj.index];
+    if (arts_value == null) {
+      console.log(`arts_value is not found. name=${char_sheet.pc_name}, arts=${name}, kind=${arts_obj.kind}, index=${arts_obj.index}`);
+      return false;
+    }
+  }
+
   return true;
 };
 
-
 module.exports =
-  { loadCharSheet
-  , requestCharSheet
+  { isCharsheetValid
+  , loadCharSheet
+  , requestCharsheet
   , storeCharSheet
-  , verifyCharSheet
   };
