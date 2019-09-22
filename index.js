@@ -10,8 +10,6 @@ const charsheet = require('./charsheet');
 const utils = require('./utils');
 const signature = require('./verifySignature');
 
-const mapping_kanji = require('./mapping_kanji.json');
-
 const app = express();
 
 

@@ -3,7 +3,7 @@
  */
 
 const charsheet = require('./charsheet');
-const mapping_kanji = require('./mapping_kanji.json');
+const arts_mapping = require('./arts_mapping.json');
 const utils = require('./utils');
 
 
@@ -76,7 +76,7 @@ const doArts = async (arts_key, user_id) => {
     return 'キャラシが見つかりません\n/char-registerを使ってキャラシを登録してください';
   }
 
-  const arts_obj = mapping_kanji[arts_key];
+  const arts_obj = arts_mapping[arts_key];
   if (arts_obj == null) {
     return `指定技能「${arts_key}」が見つかりません。`;
   }
