@@ -55,7 +55,7 @@ app.post('/char-arts', async (req, res) => {
   const user_id = req.body.user_id;
 
   try {
-    const text = await charlotte.doArts(arts_key, user_id);
+    const text = await charlotte.rollArts(arts_key, user_id);
     res.json(toMessage(text));
   } catch (e) {
     console.error(e.message);

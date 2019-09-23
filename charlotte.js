@@ -66,7 +66,7 @@ const getRollResultMessage = (result_roll, pc_name, key, value) => {
  * @param user_id the user to try arts
  * @return text for a response
  */
-const doArts = async (arts_key, user_id) => {
+const rollArts = async (arts_key, user_id) => {
   if (user_id == null) {
     throw new Error('null reference exception: char_id');
   }
@@ -144,7 +144,7 @@ const exportChar = async (user_id) => {
 
 module.exports =
   { exportChar
-  , doArts
   , registerChar
   , rollAbility
+  , rollArts
   };
