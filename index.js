@@ -58,7 +58,7 @@ app.post('/char-arts', async (req, res) => {
     const text = await charlotte.doArts(arts_key, user_id);
     res.json(toMessage(text));
   } catch (e) {
-    console.log(e.message);
+    console.error(e.message);
   }
 });
 

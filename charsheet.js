@@ -27,7 +27,7 @@ const requestCharsheet = async (char_id) => {
 
   const char_sheet = await request(options);
   if (!isCharsheetValid(char_sheet)) {
-    console.log(JSON.stringify(char_sheet));
+    console.error(JSON.stringify(char_sheet));
     throw new Error('char_sheet is not valid.');
   }
 
@@ -181,13 +181,13 @@ const hasArts = (char_sheet) => {
   for (let [name, arts_obj] of Object.entries(arts_mapping)) {
     const kinds = char_sheet[arts_obj.kind];
     if (kinds == null) {
-      console.log(`kind is not found. name=${char_sheet.pc_name}, arts=${name}, kind=${arts_obj.kind}`);
+      console.error(`kind is not found. name=${char_sheet.pc_name}, arts=${name}, kind=${arts_obj.kind}`);
       return false;
     }
 
     const arts_value = kinds[arts_obj.index];
     if (arts_value == null) {
-      console.log(`arts_value is not found. name=${char_sheet.pc_name}, arts=${name}, kind=${arts_obj.kind}, index=${arts_obj.index}`);
+      console.error(`arts_value is not found. name=${char_sheet.pc_name}, arts=${name}, kind=${arts_obj.kind}, index=${arts_obj.index}`);
       return false;
     }
   }
