@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "keywords": [
     "bot",
@@ -16,10 +16,14 @@
   "dependencies": {
     "body-parser": "^1.17.1",
     "express": "^4.15.2",
-    "request": "^2.88.0",
-    "request-promise": "^4.2.4",
     "mersennetwister": "^0.2.3",
     "nedb-promise": "*",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.4",
     "tsscmp": "^1.0.6"
+  },
+  "devDependencies": {
+    "expect": "^24.9.0",
+    "mocha": "^6.2.0"
   }
 }

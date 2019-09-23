@@ -55,19 +55,12 @@ const getArtsValue = (arts_key, char_sheet) => {
     throw new Error(`the arts is not valid. arts_key=${arts_key}`);
   }
 
+  if (!isCharsheetValid(char_sheet)) {
+    throw new Error('the char_sheet is not valid');
+  }
+
   const arts_obj = arts_mapping[arts_key];
-
-  const kinds = char_sheet[arts_obj.kind];
-  if (kinds == null) {
-    throw new Error(`kind is not found. name=${char_sheet.pc_name}, key=${arts_key}, kind=${arts_obj.kind}`);
-  }
-
-  const arts_value = kinds[arts_obj.index];
-  if (arts_value == null) {
-    throw new Error(`arts_value is not found. name=${char_sheet.pc_name}, key=${arts_key}, kind=${arts_obj.kind}, index=${arts_obj.index}`);
-  }
-
-  return kinds[arts_obj.index];
+  return char_sheet[arts_obj.kind][arts_obj.index];
 }
 
 
@@ -102,16 +95,15 @@ const getAbilityValue = (ability_key, char_sheet) => {
   }
 
   if (!isAbilityValid(ability_key)) {
-    throw new Error(`the ability is not valid. arts_key=${ability_key}`);
+    throw new Error(`the ability is not valid. ability_key=${ability_key}`);
+  }
+
+  if (!isCharsheetValid(char_sheet)) {
+    throw new Error(`the charsheet is not valid.`);
   }
 
   const np_key = np_mapping[ability_key];
-  const ability_value = char_sheet[np_key];
-  if (ability_value == null) {
-    throw new Error(`ability_value is not found. name=${char_sheet.pc_name}, key=${ability_key}, key=${np_key}`);
-  }
-
-  return ability_value;
+  return char_sheet[np_key];
 };
 
 
@@ -174,22 +166,18 @@ const loadCharSheet = async (user_id) => {
  * @return true if the charsheet is valid
  */
 const isCharsheetValid = (char_sheet) => {
-  return isCoc(char_sheet) && hasArts(char_sheet);
-};
-
-const isCoc = (char_sheet) => {
   if (char_sheet == null) {
     throw new Error('char_sheet is null');
   }
 
+  return isCoc(char_sheet) && hasArts(char_sheet) && hasAbility(char_sheet);
+};
+
+const isCoc = (char_sheet) => {
   return char_sheet['game'] == 'coc';
 };
 
 const hasArts = (char_sheet) => {
-  if (char_sheet == null) {
-    throw new Error('char_sheet is null');
-  }
-
   for (let [name, arts_obj] of Object.entries(arts_mapping)) {
     const kinds = char_sheet[arts_obj.kind];
     if (kinds == null) {
@@ -206,6 +194,19 @@ const hasArts = (char_sheet) => {
 
   return true;
 };
+
+const hasAbility = (char_sheet) => {
+  for (let [name, key] of Object.entries(np_mapping)) {
+    const ability_value = char_sheet[key];
+    if (ability_value == null) {
+      console.error(`ability_value is not found. ability=${name}, arts_key=${key}`);
+      return false;
+    }
+  }
+
+  return true
+};
+
 
 module.exports =
   { getArtsValue
